@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Frequency range: 30 GHz – 3 THz
-f = np.linspace(30e9, 3e12, 2000)
+f = np.linspace(30e9, 3e12, 2000)  # Frequency range from 30 GHz to 3 THz
 w = 2*np.pi*f
-eps0 = 8.854e-12
-c = 3e8
+eps0 = 8.854e-12  # Permittivity of free space (F/m)
+c = 3e8  # Speed of light (m/s)
 
 # ============================================================
 #  MATERIAL PARAMETERS (literature-based typical values)
@@ -41,23 +41,27 @@ Vf = 0.55
 #  EFFECTIVE MEDIUM MODEL (Maxwell Garnett)
 # ============================================================
 
-def maxwell_garnett(eps_m, eps_f, Vf):
-    return eps_m * (eps_f + 2*eps_m + 2*Vf*(eps_f - eps_m)) / \
-           (eps_f + 2*eps_m - Vf*(eps_f - eps_m))
+def maxwell_garnett(eps_m, eps_f, Vf, w):
+    # The Maxwell-Garnett model assumes a two-phase mixture of materials
+    eps_eff = eps_m * (eps_f + 2*eps_m + 2*Vf*(eps_f - eps_m)) / \
+              (eps_f + 2*eps_m - Vf*(eps_f - eps_m))
+    return eps_eff
 
-# Effective composite permittivities
-eps_eff_E     = maxwell_garnett(epsm, epsE, Vf)
-eps_eff_S     = maxwell_garnett(epsm, epsS, Vf)
-eps_eff_PAN   = maxwell_garnett(epsm, eps_cf_PAN, Vf)
-eps_eff_pitch = maxwell_garnett(epsm, eps_cf_pitch, Vf)
+# Evaluate permittivity for each frequency
+eps_eff_E     = maxwell_garnett(epsm, epsE, Vf, w)
+eps_eff_S     = maxwell_garnett(epsm, epsS, Vf, w)
+eps_eff_PAN   = maxwell_garnett(epsm, eps_cf_PAN, Vf, w)
+eps_eff_pitch = maxwell_garnett(epsm, eps_cf_pitch, Vf, w)
 
 # ============================================================
 #  ANISOTROPIC MODEL (Unidirectional Laminates)
 # ============================================================
 def eps_parallel(eps_m, eps_f, Vf):
+    # Parallel permittivity for unidirectional laminates
     return Vf*eps_f + (1-Vf)*eps_m
 
 def eps_perpendicular(eps_m, eps_f, Vf):
+    # Perpendicular permittivity for unidirectional laminates
     return eps_m * (eps_f + eps_m + Vf*(eps_f - eps_m)) / \
            (eps_f + eps_m - Vf*(eps_f - eps_m))
 
@@ -69,6 +73,7 @@ eps_perp_PAN = eps_perpendicular(epsm, eps_cf_PAN, Vf)
 #  REFLECTIVITY
 # ============================================================
 def reflection(eps):
+    # Reflectivity calculation for a material with permittivity eps
     return np.abs((np.sqrt(eps) - 1)/(np.sqrt(eps) + 1))**2
 
 R_E       = reflection(eps_eff_E)
@@ -79,6 +84,8 @@ R_pitch   = reflection(eps_eff_pitch)
 # ============================================================
 #  PLOTTING
 # ============================================================
+
+# Plot 1: Real Permittivity (ε′) vs Frequency
 plt.figure(figsize=(12,7))
 plt.plot(f*1e-9, np.real(eps_eff_E),     label="E-glass ε′")
 plt.plot(f*1e-9, np.real(eps_eff_S),     label="S-glass ε′")
@@ -89,6 +96,7 @@ plt.ylabel("Real Permittivity ε′")
 plt.legend(); plt.grid(); plt.title("Real Permittivity ε′(f)")
 plt.show()
 
+# Plot 2: Imaginary Permittivity (ε″) vs Frequency
 plt.figure(figsize=(12,7))
 plt.plot(f*1e-9, np.imag(eps_eff_E),     label="E-glass ε″")
 plt.plot(f*1e-9, np.imag(eps_eff_S),     label="S-glass ε″")
@@ -99,6 +107,7 @@ plt.ylabel("Imaginary Permittivity ε″")
 plt.legend(); plt.grid(); plt.title("Imaginary Permittivity ε″(f)")
 plt.show()
 
+# Plot 3: Reflectivity (R) vs Frequency
 plt.figure(figsize=(12,7))
 plt.plot(f*1e-9, R_E,       label="E-glass R")
 plt.plot(f*1e-9, R_S,       label="S-glass R")
@@ -109,6 +118,7 @@ plt.ylabel("Reflectivity R")
 plt.legend(); plt.grid(); plt.title("Reflectivity vs Frequency")
 plt.show()
 
+# Plot 4: Anisotropic CFRP Permittivity (ε∥ and ε⊥) vs Frequency
 plt.figure(figsize=(12,7))
 plt.plot(f*1e-9, np.real(eps_para_PAN), label="CFRP ε∥")
 plt.plot(f*1e-9, np.real(eps_perp_PAN), label="CFRP ε⊥")
@@ -116,3 +126,4 @@ plt.xlabel("Frequency (GHz)")
 plt.ylabel("ε∥ and ε⊥")
 plt.legend(); plt.grid(); plt.title("Anisotropic CFRP Permittivity")
 plt.show()
+

@@ -43,15 +43,22 @@ Vf = 0.55
 
 def maxwell_garnett(eps_m, eps_f, Vf):
     # Maxwell-Garnett model assuming a two-phase mixture of materials
+    # Ensures that eps_m and eps_f are arrays over the frequency range
     eps_eff = eps_m * (eps_f + 2 * eps_m + 2 * Vf * (eps_f - eps_m)) / \
               (eps_f + 2 * eps_m - Vf * (eps_f - eps_m))
     return eps_eff
 
-# Ensure that the permittivities are frequency-dependent (arrays)
+# Compute effective permittivities for the different materials
 eps_eff_E = maxwell_garnett(epsm, epsE, Vf)
 eps_eff_S = maxwell_garnett(epsm, epsS, Vf)
 eps_eff_PAN = maxwell_garnett(epsm, eps_cf_PAN, Vf)
 eps_eff_pitch = maxwell_garnett(epsm, eps_cf_pitch, Vf)
+
+# DEBUGGING: Check the shapes of the permittivities
+print("Shape of eps_eff_E:", np.shape(eps_eff_E))
+print("Shape of eps_eff_S:", np.shape(eps_eff_S))
+print("Shape of eps_eff_PAN:", np.shape(eps_eff_PAN))
+print("Shape of eps_eff_pitch:", np.shape(eps_eff_pitch))
 
 # ============================================================
 #  ANISOTROPIC MODEL (Unidirectional Laminates)
@@ -124,13 +131,4 @@ plt.grid()
 plt.title("Reflectivity vs Frequency")
 plt.show()
 
-# Plot 4: Anisotropic CFRP Permittivity (ε∥ and ε⊥) vs Frequency
-plt.figure(figsize=(12, 7))
-plt.plot(f * 1e-9, np.real(eps_para_PAN), label="CFRP ε∥")
-plt.plot(f * 1e-9, np.real(eps_perp_PAN), label="CFRP ε⊥")
-plt.xlabel("Frequency (GHz)")
-plt.ylabel("ε∥ and ε⊥")
-plt.legend()
-plt.grid()
-plt.title("Anisotropic CFRP Permittivity")
-plt.show()
+# Plot 4

@@ -1,15 +1,68 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
 # ============================================================
-#  EFFECTIVE MEDIUM MODEL (Maxwell Garnett)
+#  MAXWELL-GARNETT MODEL
+# ============================================================
+
+def maxwell_garnett(eps_m, eps_f, Vf):
+    """
+    Maxwell-Garnett model to calculate the effective permittivity of a composite material.
+    
+    Parameters:
+    eps_m : complex or float
+        The permittivity of the matrix material (can be complex for lossy materials).
+    eps_f : complex or float
+        The permittivity of the filler or fiber material (can be complex for lossy materials).
+    Vf : float
+        The volume fraction of the fiber material in the composite (0 <= Vf <= 1).
+        
+    Returns:
+    eps_eff : complex
+        The effective permittivity of the composite material.
+    """
+    # Implementing the Maxwell-Garnett equation
+    numerator = eps_f + 2 * eps_m + 2 * Vf * (eps_f - eps_m)
+    denominator = eps_f + 2 * eps_m - Vf * (eps_f - eps_m)
+    
+    eps_eff = eps_m * (numerator / denominator)
+    return eps_eff
+
+# ============================================================
+#  CONSTANTS AND PARAMETERS
+# ============================================================
+
+eps0 = 8.854e-12  # Permittivity of free space (F/m)
+c = 3e8  # Speed of light (m/s)
+f = np.linspace(30e9, 3e12, 2000)  # Frequency range from 30 GHz to 3 THz
+w = 2 * np.pi * f  # Angular frequency
+Vf = 0.55  # Fiber volume fraction
+
+# Material Properties (Example)
+eps_m = 3.0 - 1j * 0.02  # Epoxy matrix (with loss)
+epsE = 6.0 - 1j * 0.015  # E-glass dielectric (with loss)
+epsS = 4.8 - 1j * 0.008  # S-glass dielectric (with loss)
+
+# Assume `eps_cf_PAN` and `eps_cf_pitch` are defined elsewhere in the script
+# For now, we'll use example values
+sigma_PAN = 5e4  # Conductivity of PAN-based carbon fiber
+eps_cf_PAN = 10 - 1j * (10 * 0.05 + sigma_PAN / (w * eps0))
+
+sigma_pitch = 1e5  # Conductivity of pitch-based carbon fiber
+eps_cf_pitch = 12 - 1j * (12 * 0.05 + sigma_pitch / (w * eps0))
+
+# ============================================================
+#  CALCULATE EFFECTIVE PERMITTIVITIES (Maxwell-Garnett)
 # ============================================================
 
 # Ensure that the permittivities are frequency-dependent (arrays)
-eps_eff_E = maxwell_garnett(epsm, epsE * np.ones_like(f), Vf)  # Correct this line
-eps_eff_S = maxwell_garnett(epsm, epsS * np.ones_like(f), Vf)  # Correct this line
-eps_eff_PAN = maxwell_garnett(epsm, eps_cf_PAN, Vf)
-eps_eff_pitch = maxwell_garnett(epsm, eps_cf_pitch, Vf)
+eps_eff_E = maxwell_garnett(eps_m, epsE * np.ones_like(f), Vf)
+eps_eff_S = maxwell_garnett(eps_m, epsS * np.ones_like(f), Vf)
+eps_eff_PAN = maxwell_garnett(eps_m, eps_cf_PAN, Vf)
+eps_eff_pitch = maxwell_garnett(eps_m, eps_cf_pitch, Vf)
 
 # ============================================================
-#  REFLECTIVITY
+#  REFLECTIVITY FUNCTION
 # ============================================================
 
 def reflection(eps):
@@ -65,6 +118,11 @@ plt.title("Reflectivity vs Frequency")
 plt.show()
 
 # Plot 4: Anisotropic CFRP Permittivity (ε∥ and ε⊥) vs Frequency
+# Assuming `eps_para_PAN` and `eps_perp_PAN` are calculated elsewhere in the script
+# You can add them like this if needed (example only):
+# eps_para_PAN = eps_parallel(eps_m, eps_cf_PAN, Vf)
+# eps_perp_PAN = eps_perpendicular(eps_m, eps_cf_PAN, Vf)
+
 plt.figure(figsize=(12, 7))
 plt.plot(f * 1e-9, np.real(eps_para_PAN), label="CFRP ε∥")
 plt.plot(f * 1e-9, np.real(eps_perp_PAN), label="CFRP ε⊥")

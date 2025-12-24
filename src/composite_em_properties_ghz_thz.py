@@ -29,6 +29,23 @@ def maxwell_garnett(eps_m, eps_f, Vf):
     return eps_eff
 
 # ============================================================
+#  ANISOTROPIC MODEL FOR UNIDIRECTIONAL LAMINATES
+# ============================================================
+
+def eps_parallel(eps_m, eps_f, Vf):
+    """
+    Parallel permittivity for unidirectional laminates.
+    """
+    return Vf * eps_f + (1 - Vf) * eps_m
+
+def eps_perpendicular(eps_m, eps_f, Vf):
+    """
+    Perpendicular permittivity for unidirectional laminates.
+    """
+    return eps_m * (eps_f + eps_m + Vf * (eps_f - eps_m)) / \
+           (eps_f + eps_m - Vf * (eps_f - eps_m))
+
+# ============================================================
 #  CONSTANTS AND PARAMETERS
 # ============================================================
 
@@ -43,8 +60,7 @@ eps_m = 3.0 - 1j * 0.02  # Epoxy matrix (with loss)
 epsE = 6.0 - 1j * 0.015  # E-glass dielectric (with loss)
 epsS = 4.8 - 1j * 0.008  # S-glass dielectric (with loss)
 
-# Assume `eps_cf_PAN` and `eps_cf_pitch` are defined elsewhere in the script
-# For now, we'll use example values
+# Assume `eps_cf_PAN` and `eps_cf_pitch` are defined with conductivity for PAN and Pitch carbon fibers
 sigma_PAN = 5e4  # Conductivity of PAN-based carbon fiber
 eps_cf_PAN = 10 - 1j * (10 * 0.05 + sigma_PAN / (w * eps0))
 
@@ -60,6 +76,14 @@ eps_eff_E = maxwell_garnett(eps_m, epsE * np.ones_like(f), Vf)
 eps_eff_S = maxwell_garnett(eps_m, epsS * np.ones_like(f), Vf)
 eps_eff_PAN = maxwell_garnett(eps_m, eps_cf_PAN, Vf)
 eps_eff_pitch = maxwell_garnett(eps_m, eps_cf_pitch, Vf)
+
+# ============================================================
+#  CALCULATE ANISOTROPIC CFRP PERMITTIVITIES
+# ============================================================
+
+# Parallel and perpendicular permittivities for PAN-based CFRP
+eps_para_PAN = eps_parallel(eps_m, eps_cf_PAN, Vf)
+eps_perp_PAN = eps_perpendicular(eps_m, eps_cf_PAN, Vf)
 
 # ============================================================
 #  REFLECTIVITY FUNCTION
@@ -118,11 +142,6 @@ plt.title("Reflectivity vs Frequency")
 plt.show()
 
 # Plot 4: Anisotropic CFRP Permittivity (ε∥ and ε⊥) vs Frequency
-# Assuming `eps_para_PAN` and `eps_perp_PAN` are calculated elsewhere in the script
-# You can add them like this if needed (example only):
-# eps_para_PAN = eps_parallel(eps_m, eps_cf_PAN, Vf)
-# eps_perp_PAN = eps_perpendicular(eps_m, eps_cf_PAN, Vf)
-
 plt.figure(figsize=(12, 7))
 plt.plot(f * 1e-9, np.real(eps_para_PAN), label="CFRP ε∥")
 plt.plot(f * 1e-9, np.real(eps_perp_PAN), label="CFRP ε⊥")

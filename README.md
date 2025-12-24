@@ -7,3 +7,12 @@ frequency range 30 GHz → 3 THz
 Maxwell-Garnett effective medium theory
 includes carbon fiber conductivity and THz dispersion
 accounts for anisotropy through ⟂ and ∥ permittivity models (included below)
+
+
+drude_lorentz_scattering_tmm_composites.py generates:
+
+THz-TDS validated parameter sets (actual published values) 
+Multi-layer laminate stack reflection/transmission model (transfer matrix method, 2×2 electromagnetic propagation matrices) 
+Fit experimental THz-TDS data to extract ε′ and ε″ 
+Add scattering (Rayleigh / Mie) terms for fiber roughness
+Add Drude–Lorentz dispersion for carbon fibers

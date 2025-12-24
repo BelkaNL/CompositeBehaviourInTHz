@@ -99,6 +99,37 @@ R_PAN = reflection(eps_eff_PAN)
 R_pitch = reflection(eps_eff_pitch)
 
 # ============================================================
+#  DEBUGGING CHECKS
+# ============================================================
+
+# 1. Check the shapes of the arrays
+print("Shape of f: ", np.shape(f))
+print("Shape of eps_eff_E: ", np.shape(eps_eff_E))
+print("Shape of eps_eff_S: ", np.shape(eps_eff_S))
+print("Shape of eps_eff_PAN: ", np.shape(eps_eff_PAN))
+print("Shape of eps_eff_pitch: ", np.shape(eps_eff_pitch))
+
+# 2. Check for NaN or Inf values in permittivity arrays
+print("NaN in eps_eff_E: ", np.any(np.isnan(eps_eff_E)))
+print("NaN in eps_eff_S: ", np.any(np.isnan(eps_eff_S)))
+print("NaN in eps_eff_PAN: ", np.any(np.isnan(eps_eff_PAN)))
+print("NaN in eps_eff_pitch: ", np.any(np.isnan(eps_eff_pitch)))
+
+print("Inf in eps_eff_E: ", np.any(np.isinf(eps_eff_E)))
+print("Inf in eps_eff_S: ", np.any(np.isinf(eps_eff_S)))
+print("Inf in eps_eff_PAN: ", np.any(np.isinf(eps_eff_PAN)))
+print("Inf in eps_eff_pitch: ", np.any(np.isinf(eps_eff_pitch)))
+
+# 3. Test with a basic plot to ensure matplotlib is working
+plt.figure(figsize=(12, 7))
+plt.plot(f * 1e-9, np.sin(f * 1e-9))  # Plot a simple sine wave for testing
+plt.title("Basic Test Plot: Sine Wave")
+plt.xlabel("Frequency (GHz)")
+plt.ylabel("Amplitude")
+plt.grid(True)
+plt.show()
+
+# ============================================================
 #  PLOTTING
 # ============================================================
 

@@ -28,5 +28,5 @@ jobs:
 
     - name: Run Python script
       run: |
-        python your_script.py  # Replace 'your_script.py' with the actual filename of your script
+        python composite_em_properties_ghz_thz.py 
 

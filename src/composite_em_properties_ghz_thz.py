@@ -41,17 +41,17 @@ Vf = 0.55
 #  EFFECTIVE MEDIUM MODEL (Maxwell Garnett)
 # ============================================================
 
-def maxwell_garnett(eps_m, eps_f, Vf, w):
+def maxwell_garnett(eps_m, eps_f, Vf):
     # The Maxwell-Garnett model assumes a two-phase mixture of materials
     eps_eff = eps_m * (eps_f + 2*eps_m + 2*Vf*(eps_f - eps_m)) / \
               (eps_f + 2*eps_m - Vf*(eps_f - eps_m))
     return eps_eff
 
-# Evaluate permittivity for each frequency
-eps_eff_E     = maxwell_garnett(epsm, epsE, Vf, w)
-eps_eff_S     = maxwell_garnett(epsm, epsS, Vf, w)
-eps_eff_PAN   = maxwell_garnett(epsm, eps_cf_PAN, Vf, w)
-eps_eff_pitch = maxwell_garnett(epsm, eps_cf_pitch, Vf, w)
+# Ensure that the permittivities are frequency-dependent (arrays)
+eps_eff_E     = maxwell_garnett(epsm, epsE, Vf)
+eps_eff_S     = maxwell_garnett(epsm, epsS, Vf)
+eps_eff_PAN   = maxwell_garnett(epsm, eps_cf_PAN, Vf)
+eps_eff_pitch = maxwell_garnett(epsm, eps_cf_pitch, Vf)
 
 # ============================================================
 #  ANISOTROPIC MODEL (Unidirectional Laminates)
@@ -126,4 +126,3 @@ plt.xlabel("Frequency (GHz)")
 plt.ylabel("ε∥ and ε⊥")
 plt.legend(); plt.grid(); plt.title("Anisotropic CFRP Permittivity")
 plt.show()
-

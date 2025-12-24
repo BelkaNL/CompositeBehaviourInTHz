@@ -1,4 +1,4 @@
-This script generates:
+This script composite_em_properties_ghz_thz.py generates:
 
 ε′(f) and ε″(f) vs frequency
  reflectivity R(f)

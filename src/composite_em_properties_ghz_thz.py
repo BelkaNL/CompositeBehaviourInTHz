@@ -180,4 +180,11 @@ plt.close()
 # Plot 4: Anisotropic CFRP Permittivity (ε∥ and ε⊥) vs Frequency
 plt.figure(figsize=(12, 7))
 plt.plot(f * 1e-9, np.real(eps_para_PAN), label="CFRP ε∥")
-plt.plot(f * 1e-9,
+plt.plot(f * 1e-9, np.real(eps_perp_PAN), label="CFRP ε⊥")
+plt.xlabel("Frequency (GHz)")
+plt.ylabel("ε∥ and ε⊥")
+plt.legend()
+plt.grid()
+plt.title("Anisotropic CFRP Permittivity")
+plt.savefig("anisotropic_cfrp_permittivity.png")  # Save the plot as a PNG file
+plt.close()

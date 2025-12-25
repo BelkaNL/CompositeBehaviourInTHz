@@ -135,6 +135,9 @@ plt.close()  # Close the figure
 #  PLOTTING
 # ============================================================
 
+# Ensure matplotlib uses the Agg backend (for headless environments)
+matplotlib.use('Agg')
+
 # Plot 1: Real Permittivity (ε′) vs Frequency
 plt.figure(figsize=(12, 7))
 plt.plot(f * 1e-9, np.real(eps_eff_E), label="E-glass ε′")
@@ -188,3 +191,5 @@ plt.grid()
 plt.title("Anisotropic CFRP Permittivity")
 plt.savefig("anisotropic_cfrp_permittivity.png")  # Save the plot as a PNG file
 plt.close()
+
+print("All plots are saved successfully.")

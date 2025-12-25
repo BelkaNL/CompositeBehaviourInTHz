@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 
 # ============================================================
@@ -127,7 +128,8 @@ plt.title("Basic Test Plot: Sine Wave")
 plt.xlabel("Frequency (GHz)")
 plt.ylabel("Amplitude")
 plt.grid(True)
-plt.show()
+plt.savefig("basic_test_plot.png")  # Save the basic test plot
+plt.close()  # Close the figure
 
 # ============================================================
 #  PLOTTING
@@ -144,7 +146,8 @@ plt.ylabel("Real Permittivity ε′")
 plt.legend()
 plt.grid()
 plt.title("Real Permittivity ε′(f)")
-plt.show()
+plt.savefig("real_permittivity.png")  # Save the plot as a PNG file
+plt.close()
 
 # Plot 2: Imaginary Permittivity (ε″) vs Frequency
 plt.figure(figsize=(12, 7))
@@ -157,7 +160,8 @@ plt.ylabel("Imaginary Permittivity ε″")
 plt.legend()
 plt.grid()
 plt.title("Imaginary Permittivity ε″(f)")
-plt.show()
+plt.savefig("imaginary_permittivity.png")  # Save the plot as a PNG file
+plt.close()
 
 # Plot 3: Reflectivity (R) vs Frequency
 plt.figure(figsize=(12, 7))
@@ -170,15 +174,10 @@ plt.ylabel("Reflectivity R")
 plt.legend()
 plt.grid()
 plt.title("Reflectivity vs Frequency")
-plt.show()
+plt.savefig("reflectivity.png")  # Save the plot as a PNG file
+plt.close()
 
 # Plot 4: Anisotropic CFRP Permittivity (ε∥ and ε⊥) vs Frequency
 plt.figure(figsize=(12, 7))
 plt.plot(f * 1e-9, np.real(eps_para_PAN), label="CFRP ε∥")
-plt.plot(f * 1e-9, np.real(eps_perp_PAN), label="CFRP ε⊥")
-plt.xlabel("Frequency (GHz)")
-plt.ylabel("ε∥ and ε⊥")
-plt.legend()
-plt.grid()
-plt.title("Anisotropic CFRP Permittivity")
-plt.show()
+plt.plot(f * 1e-9,

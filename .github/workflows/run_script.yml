@@ -28,5 +28,5 @@ jobs:
 
     - name: Run Python script
       run: |
-        python src/composite_em_properties_ghz_thz.py 
+        python src/test.py 
 

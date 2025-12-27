@@ -41,9 +41,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub for authentication
 
-    # Step 2: Upload generated plots as GitHub artifacts (use v3)
+    # Step 2: Upload generated plots as GitHub artifacts (use @latest)
     - name: Upload plots as artifacts
-      uses: actions/upload-artifact@v3  # Updated to v3
+      uses: actions/upload-artifact@latest  # Using the latest version
       with:
         name: plots
         path: plots/  # Path to your generated plots

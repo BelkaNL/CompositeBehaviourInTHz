@@ -30,9 +30,16 @@ jobs:
       run: |
         python src/test.py  # Ensure this path points to your script that generates plots
 
-    # Step 2: Upload generated plots as GitHub artifacts
-    - name: Upload plots as artifacts
-      uses: actions/upload-artifact@v3  # Use the latest v3 (correct version)
-      with:
-        name: plots
-        path: plots/  # Path to the generated plots
+    # Step 2: Install GitHub CLI
+    - name: Install GitHub CLI
+      run: |
+        curl -fsSL https://cli.github.com/packages/githubcli-archive.key | sudo tee /etc/apt/trusted.gpg.d/githubcli.asc
+        sudo apt update
+        sudo apt install gh
+
+    # Step 3: Upload generated plots as artifacts via GitHub CLI
+    - name: Upload generated plots as artifacts
+      run: |
+        gh auth login --with-token <<< ${{ secrets.GITHUB_TOKEN }}
+        gh release create "artifact-release" plots/* --title "Generated Plots" --notes "This release contains the generated plots."
+

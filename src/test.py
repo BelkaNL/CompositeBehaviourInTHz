@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")   # Headless-safe
+matplotlib.use("Agg")  # Headless-safe
 import matplotlib.pyplot as plt
 import os
 
@@ -71,6 +71,7 @@ R = reflectivity(eps_eff)
 # CREATE PLOTS FOLDER
 # ============================================================
 
+# Create a folder to save the plots (in case it doesn't exist)
 save_dir = os.path.join(os.getcwd(), "plots")
 os.makedirs(save_dir, exist_ok=True)
 print("Plots folder created at:", save_dir)

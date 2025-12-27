@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")   # Headless-safe
 import matplotlib.pyplot as plt
+import os
 
 # ============================================================
 # MODELS
@@ -67,6 +68,12 @@ tan_delta = loss_tangent(eps_eff)
 R = reflectivity(eps_eff)
 
 # ============================================================
+# CREATE PLOTS FOLDER
+# ============================================================
+
+os.makedirs("plots", exist_ok=True)
+
+# ============================================================
 # PLOTTING
 # ============================================================
 
@@ -79,7 +86,7 @@ plt.ylabel("Permittivity")
 plt.legend()
 plt.grid()
 plt.title("Orientation-Averaged Effective Permittivity (Glass Composite)")
-plt.savefig("eps_effective.png")
+plt.savefig("plots/eps_effective.png")
 plt.close()
 
 # --- Loss Tangent ---
@@ -89,7 +96,7 @@ plt.xlabel("Frequency (GHz)")
 plt.ylabel("tan δ")
 plt.title("Loss Tangent vs Frequency")
 plt.grid()
-plt.savefig("loss_tangent.png")
+plt.savefig("plots/loss_tangent.png")
 plt.close()
 
 # --- Reflectivity ---
@@ -99,7 +106,12 @@ plt.xlabel("Frequency (GHz)")
 plt.ylabel("Reflectivity R")
 plt.title("Normal-Incidence Reflectivity")
 plt.grid()
-plt.savefig("reflectivity.png")
+plt.savefig("plots/reflectivity.png")
 plt.close()
 
-print("Plots saved successfully. All computations completed.")
+# ============================================================
+# CONFIRMATION
+# ============================================================
+
+print("Plots saved successfully in folder:", os.path.abspath("plots"))
+print("Contents:", os.listdir("plots"))

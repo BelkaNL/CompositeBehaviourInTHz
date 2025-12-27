@@ -71,11 +71,15 @@ R = reflectivity(eps_eff)
 # CREATE PLOTS FOLDER
 # ============================================================
 
-os.makedirs("plots", exist_ok=True)
+save_dir = os.path.join(os.getcwd(), "plots")
+os.makedirs(save_dir, exist_ok=True)
+print("Plots folder created at:", save_dir)
 
 # ============================================================
 # PLOTTING
 # ============================================================
+
+plots = {}
 
 # --- Real and Imaginary Permittivity ---
 plt.figure(figsize=(10,6))
@@ -86,8 +90,10 @@ plt.ylabel("Permittivity")
 plt.legend()
 plt.grid()
 plt.title("Orientation-Averaged Effective Permittivity (Glass Composite)")
-plt.savefig("plots/eps_effective.png")
+file_eps = os.path.join(save_dir, "eps_effective.png")
+plt.savefig(file_eps)
 plt.close()
+plots['Permittivity'] = file_eps
 
 # --- Loss Tangent ---
 plt.figure(figsize=(10,6))
@@ -96,8 +102,10 @@ plt.xlabel("Frequency (GHz)")
 plt.ylabel("tan δ")
 plt.title("Loss Tangent vs Frequency")
 plt.grid()
-plt.savefig("plots/loss_tangent.png")
+file_tand = os.path.join(save_dir, "loss_tangent.png")
+plt.savefig(file_tand)
 plt.close()
+plots['Loss Tangent'] = file_tand
 
 # --- Reflectivity ---
 plt.figure(figsize=(10,6))
@@ -106,12 +114,15 @@ plt.xlabel("Frequency (GHz)")
 plt.ylabel("Reflectivity R")
 plt.title("Normal-Incidence Reflectivity")
 plt.grid()
-plt.savefig("plots/reflectivity.png")
+file_ref = os.path.join(save_dir, "reflectivity.png")
+plt.savefig(file_ref)
 plt.close()
+plots['Reflectivity'] = file_ref
 
 # ============================================================
 # CONFIRMATION
 # ============================================================
 
-print("Plots saved successfully in folder:", os.path.abspath("plots"))
-print("Contents:", os.listdir("plots"))
+print("Plots saved successfully!")
+for name, path in plots.items():
+    print(f"{name} plot: {path}")

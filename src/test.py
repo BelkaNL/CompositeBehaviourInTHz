@@ -1,129 +1,49 @@
-import numpy as np
-import matplotlib
-matplotlib.use("Agg")  # Headless-safe
-import matplotlib.pyplot as plt
-import os
+name: Run Python Script and Upload Plots as Artifacts
 
-# ============================================================
-# MODELS
-# ============================================================
+on:
+  push:
+    branches:
+      - main  # This triggers the workflow on push to the 'main' branch
+  pull_request:
+    branches:
+      - main  # This triggers the workflow on pull requests to 'main'
 
-def maxwell_garnett(eps_m, eps_f, Vf):
-    num = eps_f + 2*eps_m + 2*Vf*(eps_f - eps_m)
-    den = eps_f + 2*eps_m - Vf*(eps_f - eps_m)
-    return eps_m * num / den
+jobs:
+  run_script:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
 
-def eps_parallel(eps_m, eps_f, Vf):
-    return Vf * eps_f + (1 - Vf) * eps_m
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2  # Checks out your code from the repository
 
-def eps_perpendicular(eps_m, eps_f, Vf):
-    return eps_m * (eps_f + eps_m + Vf*(eps_f - eps_m)) / \
-                   (eps_f + eps_m - Vf*(eps_f - eps_m))
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9  # Python version
 
-def orientation_average(eps_para, eps_perp):
-    return (1/3)*eps_para + (2/3)*eps_perp
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy matplotlib  # Add any other dependencies your script needs
 
-def loss_tangent(eps):
-    return np.imag(eps) / np.real(eps)
+    - name: Run Python script to generate plots
+      run: |
+        python src/test.py  # Ensure this path points to your script that generates plots
 
-def reflectivity(eps):
-    n = np.sqrt(eps)
-    return np.abs((n - 1)/(n + 1))**2
+    # Step 1: Commit and push the generated plots to GitHub
+    - name: Commit and push plots
+      run: |
+        git config user.name "github-actions[bot]"  # Set GitHub Actions bot name
+        git config user.email "github-actions[bot]@users.noreply.github.com"  # Set bot email
+        git add plots/*  # Add the generated plots to git
+        git commit -m "Add new plots generated on $(date)"  # Commit the new plots
+        git push  # Push the changes back to GitHub
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub for authentication
 
-# ============================================================
-# FREQUENCY AXIS
-# ============================================================
-
-f = np.linspace(30e9, 3e12, 2000)
-f_GHz = f * 1e-9
-
-# ============================================================
-# MATERIAL PARAMETERS
-# ============================================================
-
-Vf = 0.30  # Fiber volume fraction (MG-valid)
-
-# Epoxy matrix (array)
-eps_m_scalar = 3.0 - 1j*0.02
-eps_m = eps_m_scalar * np.ones_like(f)
-
-# E-glass fiber
-eps_f_real_0 = 6.0
-eps_f_imag_0 = 0.015
-eps_f = (eps_f_real_0 - 1j*eps_f_imag_0) * np.ones_like(f)
-
-# ============================================================
-# ORIENTATION-DEPENDENT PERMITTIVITY
-# ============================================================
-
-eps_para = eps_parallel(eps_m, eps_f, Vf)
-eps_perp = eps_perpendicular(eps_m, eps_f, Vf)
-eps_eff = orientation_average(eps_para, eps_perp)
-
-# ============================================================
-# LOSS TANGENT & REFLECTIVITY
-# ============================================================
-
-tan_delta = loss_tangent(eps_eff)
-R = reflectivity(eps_eff)
-
-# ============================================================
-# CREATE PLOTS FOLDER
-# ============================================================
-
-# Create a folder to save the plots (in case it doesn't exist)
-save_dir = os.path.join(os.getcwd(), "plots")
-os.makedirs(save_dir, exist_ok=True)
-print("Plots folder created at:", save_dir)
-
-# ============================================================
-# PLOTTING
-# ============================================================
-
-plots = {}
-
-# --- Real and Imaginary Permittivity ---
-plt.figure(figsize=(10,6))
-plt.plot(f_GHz, np.real(eps_eff), label="ε′ (avg)")
-plt.plot(f_GHz, np.imag(eps_eff), label="ε″ (avg)")
-plt.xlabel("Frequency (GHz)")
-plt.ylabel("Permittivity")
-plt.legend()
-plt.grid()
-plt.title("Orientation-Averaged Effective Permittivity (Glass Composite)")
-file_eps = os.path.join(save_dir, "eps_effective.png")
-plt.savefig(file_eps)
-plt.close()
-plots['Permittivity'] = file_eps
-
-# --- Loss Tangent ---
-plt.figure(figsize=(10,6))
-plt.plot(f_GHz, tan_delta)
-plt.xlabel("Frequency (GHz)")
-plt.ylabel("tan δ")
-plt.title("Loss Tangent vs Frequency")
-plt.grid()
-file_tand = os.path.join(save_dir, "loss_tangent.png")
-plt.savefig(file_tand)
-plt.close()
-plots['Loss Tangent'] = file_tand
-
-# --- Reflectivity ---
-plt.figure(figsize=(10,6))
-plt.plot(f_GHz, R)
-plt.xlabel("Frequency (GHz)")
-plt.ylabel("Reflectivity R")
-plt.title("Normal-Incidence Reflectivity")
-plt.grid()
-file_ref = os.path.join(save_dir, "reflectivity.png")
-plt.savefig(file_ref)
-plt.close()
-plots['Reflectivity'] = file_ref
-
-# ============================================================
-# CONFIRMATION
-# ============================================================
-
-print("Plots saved successfully!")
-for name, path in plots.items():
-    print(f"{name} plot: {path}")
+    # Step 2: Upload generated plots as GitHub artifacts
+    - name: Upload plots as artifacts
+      uses: actions/upload-artifact@v3  # Use latest supported version for artifact uploads
+      with:
+        name: plots
+        path: plots/  # Path to the generated plots

@@ -1,8 +1,7 @@
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")   # headless-safe
+matplotlib.use("Agg")   # Headless-safe
 import matplotlib.pyplot as plt
-from scipy.optimize import least_squares
 
 # ============================================================
 # MODELS
@@ -38,30 +37,26 @@ f = np.linspace(30e9, 3e12, 2000)
 f_GHz = f * 1e-9
 
 # ============================================================
-# MATERIAL PARAMETERS (MG-VALID)
+# MATERIAL PARAMETERS
 # ============================================================
 
-Vf = 0.30  # valid for Maxwell–Garnett
+Vf = 0.30  # Fiber volume fraction (MG-valid)
 
-# Epoxy matrix (array!)
+# Epoxy matrix (array)
 eps_m_scalar = 3.0 - 1j*0.02
 eps_m = eps_m_scalar * np.ones_like(f)
 
-# E-glass fiber (initial / nominal values)
+# E-glass fiber
 eps_f_real_0 = 6.0
 eps_f_imag_0 = 0.015
-
-# Fiber permittivity AS ARRAY (CRITICAL FIX)
 eps_f = (eps_f_real_0 - 1j*eps_f_imag_0) * np.ones_like(f)
 
 # ============================================================
-# ORIENTATION-DEPENDENT EFFECTIVE PERMITTIVITY
+# ORIENTATION-DEPENDENT PERMITTIVITY
 # ============================================================
 
 eps_para = eps_parallel(eps_m, eps_f, Vf)
 eps_perp = eps_perpendicular(eps_m, eps_f, Vf)
-
-# Randomly oriented glass fiber composite
 eps_eff = orientation_average(eps_para, eps_perp)
 
 # ============================================================
@@ -69,4 +64,42 @@ eps_eff = orientation_average(eps_para, eps_perp)
 # ============================================================
 
 tan_delta = loss_tangent(eps_eff)
-R = ref
+R = reflectivity(eps_eff)
+
+# ============================================================
+# PLOTTING
+# ============================================================
+
+# --- Real and Imaginary Permittivity ---
+plt.figure(figsize=(10,6))
+plt.plot(f_GHz, np.real(eps_eff), label="ε′ (avg)")
+plt.plot(f_GHz, np.imag(eps_eff), label="ε″ (avg)")
+plt.xlabel("Frequency (GHz)")
+plt.ylabel("Permittivity")
+plt.legend()
+plt.grid()
+plt.title("Orientation-Averaged Effective Permittivity (Glass Composite)")
+plt.savefig("eps_effective.png")
+plt.close()
+
+# --- Loss Tangent ---
+plt.figure(figsize=(10,6))
+plt.plot(f_GHz, tan_delta)
+plt.xlabel("Frequency (GHz)")
+plt.ylabel("tan δ")
+plt.title("Loss Tangent vs Frequency")
+plt.grid()
+plt.savefig("loss_tangent.png")
+plt.close()
+
+# --- Reflectivity ---
+plt.figure(figsize=(10,6))
+plt.plot(f_GHz, R)
+plt.xlabel("Frequency (GHz)")
+plt.ylabel("Reflectivity R")
+plt.title("Normal-Incidence Reflectivity")
+plt.grid()
+plt.savefig("reflectivity.png")
+plt.close()
+
+print("Plots saved successfully. All computations completed.")

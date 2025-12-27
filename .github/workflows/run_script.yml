@@ -41,9 +41,11 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub for authentication
 
-    # Step 2: Upload generated plots as GitHub artifacts (ensure using v3)
-    - name: Upload plots as artifacts
-      uses: actions/upload-artifact@v3  # Correct and supported version
-      with:
-        name: plots
-        path: plots/  # Path to your generated plots
+    # Step 2: Create a GitHub Release and Upload Plots as Release Assets
+    - name: Create a GitHub Release and upload plots
+      run: |
+        # Create a new release using the GitHub CLI
+        gh release create "v$(date +%Y%m%d%H%M%S)" \
+          plots/*  # Upload all the files in the plots/ directory to the release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use the GitHub Token to authenticate the gh CLI

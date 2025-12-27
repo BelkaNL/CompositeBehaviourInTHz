@@ -32,7 +32,7 @@ jobs:
 
     # Step 2: Upload generated plots as GitHub artifacts
     - name: Upload plots as artifacts
-      uses: actions/upload-artifact@v2  # Use the correct v2 version of upload-artifact
+      uses: actions/upload-artifact@v3  # Use the latest v3 (correct version)
       with:
         name: plots
         path: plots/  # Path to the generated plots

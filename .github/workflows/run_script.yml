@@ -1,4 +1,4 @@
-name: Run Python Script and Upload Plots
+name: Run Python Script and Upload Plots as Artifacts
 
 on:
   push:
@@ -30,22 +30,9 @@ jobs:
       run: |
         python src/test.py  # Ensure this path points to your script that generates plots
 
-    # Step 1: Commit and push the generated plots to GitHub
-    - name: Commit and push plots
-      run: |
-        git config user.name "github-actions[bot]"  # Set GitHub Actions bot name
-        git config user.email "github-actions[bot]@users.noreply.github.com"  # Set bot email
-        git add plots/*  # Add the generated plots to git
-        git commit -m "Add new plots generated on $(date)"  # Commit the new plots
-        git push  # Push the changes back to GitHub
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub for authentication
-
-    # Step 2: Create a GitHub Release and Upload Plots as Release Assets
-    - name: Create a GitHub Release and upload plots as assets
-      run: |
-        # Create a new release using the GitHub CLI
-        gh release create "v$(date +%Y%m%d%H%M%S)" \
-          plots/*  # Upload all files in the plots/ directory to the release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use the GitHub Token to authenticate the gh CLI
+    # Step 2: Upload generated plots as GitHub artifacts
+    - name: Upload plots as artifacts
+      uses: actions/upload-artifact@v3  # Use latest supported version for artifact uploads
+      with:
+        name: plots
+        path: plots/  # Path to the generated plots

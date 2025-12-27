@@ -28,5 +28,22 @@ jobs:
 
     - name: Run Python script
       run: |
-        python src/test.py 
+        python src/test.py  # Run your script (adjust path if needed)
 
+    # Step 1: Commit and push generated plots to GitHub
+    - name: Commit and push plots
+      run: |
+        git config user.name "github-actions[bot]"  # Set GitHub Actions bot name
+        git config user.email "github-actions[bot]@users.noreply.github.com"  # Set bot email
+        git add artifacts/plots/*  # Add the generated plots to git
+        git commit -m "Add new plots generated on $(date)"  # Commit the new plots
+        git push  # Push the changes back to GitHub
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub for authentication
+
+    # Step 2 (Optional): Upload generated plots as GitHub artifacts for easy download
+    - name: Upload plots as artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: plots
+        path: artifacts/plots/  # Path to your generated plots

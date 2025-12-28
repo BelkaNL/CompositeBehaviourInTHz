@@ -1,4 +1,4 @@
-name: Run Python Script and Publish Plots to GitHub Pages
+name: Run Python Script and Commit Plots
 
 on:
   push:
@@ -30,21 +30,15 @@ jobs:
       run: |
         python src/test.py  # Ensure this path points to your script that generates plots
 
-    - name: Set up GitHub Pages
+    - name: Commit and push plots to the repository
       run: |
-        # Fetch the gh-pages branch. If it doesn't exist, create it.
-        git fetch origin gh-pages || git checkout --orphan gh-pages
-        
-        # Ensure the branch is set up correctly
-        git switch gh-pages
-
-        # Create a new directory for the generated plots to avoid conflicts
+        # Create a directory for generated plots if it doesn't exist
         mkdir -p generated_plots
 
-        # Copy the generated plots to the new directory
-        cp plots/*.png generated_plots/
+        # Move the generated plots into this directory
+        mv plots/*.png generated_plots/
 
-        # Add the new files to git, commit, and push
+        # Add, commit, and push the generated plots
         git add generated_plots/*
-        git commit -m "Add generated plots to GitHub Pages"
-        git push origin gh-pages --force
+        git commit -m "Add generated plots"
+        git push origin main

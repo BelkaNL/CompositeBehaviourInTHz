@@ -77,8 +77,8 @@ R = reflectivity(eps_eff)
 # CREATE PLOTS FOLDER
 # ============================================================
 
-# Ensure the "plots" directory exists
-save_dir = os.path.join(os.getcwd(), "plots")
+# Ensure the "generated_plots" directory exists
+save_dir = os.path.join(os.getcwd(), "generated_plots")
 os.makedirs(save_dir, exist_ok=True)
 
 # ============================================================

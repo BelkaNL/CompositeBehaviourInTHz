@@ -31,7 +31,7 @@ jobs:
         python src/test.py  # Ensure this path points to your script that generates plots
 
     - name: Upload generated plots as artifacts
-      uses: actions/upload-artifact@v2  # Upload plots as artifacts using v2
+      uses: actions/upload-artifact@v3  # Updated to the latest version (v3)
       with:
         name: generated-plots  # The name of the artifact to be displayed in GitHub UI
         path: plots/*  # Path to the generated plot files

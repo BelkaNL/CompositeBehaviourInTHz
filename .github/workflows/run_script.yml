@@ -1,4 +1,4 @@
-name: Run Python Script and Commit Plots
+name: Generate Datasets and Plots
 
 on:
   push:
@@ -9,40 +9,33 @@ on:
       - main  # Trigger the workflow on pull requests to 'main'
 
 jobs:
-  run_script:
+  build:
     runs-on: ubuntu-latest  # Use the latest Ubuntu runner
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2  # Checks out your code from the repository
+      # 1. Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9  # Python version
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install numpy matplotlib  # Add any other dependencies your script needs
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy matplotlib  # Add other dependencies as needed
 
-    - name: Run Python script to generate plots
-      run: |
-        python src/test.py  # Ensure this path points to your script that generates plots
+      # 4. Run Python script to generate plots
+      - name: Generate plots
+        run: python src/test.py  # Ensure this is the correct path to your Python script
 
-    - name: Commit and push plots to the repository
-      run: |
-        # Ensure the "generated_plots" directory exists
-        mkdir -p generated_plots
-
-        # Move the generated plots into the "generated_plots" directory
-        mv plots/*.png generated_plots/
-
-        # Configure Git to commit changes
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-
-        # Add, commit, and push the generated plots
-        git add generated_plots/*
-        git commit -m "Add generated plots"
-        git push origin main
+      # 5. Upload the plots as artifacts
+      - name: Upload plots
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated_plots
+          path: generated_plots/*.png  # Adjust if your plots are stored in a different folder

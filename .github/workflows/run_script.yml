@@ -32,11 +32,13 @@ jobs:
 
     - name: Set up GitHub Pages
       run: |
-        # Check if the `gh-pages` branch exists. If not, create it.
+        # Check if the `gh-pages` branch exists, if not create it
         git fetch origin gh-pages || git checkout --orphan gh-pages
         
-        # Keep the existing files in the branch (don't delete them)
-        git reset --hard origin/gh-pages  # This will avoid deleting your files
+        # If the branch was newly created, we need to set the upstream
+        if [ "$(git rev-parse --abbrev-ref HEAD)" = "gh-pages" ]; then
+          git reset --hard  # Clean working tree if it's a new orphan branch
+        fi
         
         # Create a folder for plots (ensure it's empty)
         mkdir -p plots

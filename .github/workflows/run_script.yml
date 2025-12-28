@@ -32,17 +32,19 @@ jobs:
 
     - name: Set up GitHub Pages
       run: |
-        # Create the `gh-pages` branch if it doesn't exist yet
-        git checkout --orphan gh-pages
-        git rm -rf .
+        # Check if the `gh-pages` branch exists. If not, create it.
+        git fetch origin gh-pages || git checkout --orphan gh-pages
         
-        # Create a folder to store plots
-        mkdir plots
+        # Keep the existing files in the branch (don't delete them)
+        git reset --hard origin/gh-pages  # This will avoid deleting your files
         
-        # Move generated plots into that folder
+        # Create a folder for plots (ensure it's empty)
+        mkdir -p plots
+
+        # Copy the generated plots to this folder
         cp plots/*.png plots/
 
-        # Commit the plots and push them to the gh-pages branch
+        # Add, commit, and push the changes
         git add plots/*
         git commit -m "Add generated plots to GitHub Pages"
         git push origin gh-pages --force

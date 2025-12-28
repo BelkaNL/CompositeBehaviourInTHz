@@ -32,11 +32,15 @@ jobs:
 
     - name: Commit and push plots to the repository
       run: |
-        # Create a directory for generated plots if it doesn't exist
+        # Ensure the "generated_plots" directory exists
         mkdir -p generated_plots
 
-        # Move the generated plots into this directory
+        # Move the generated plots into the "generated_plots" directory
         mv plots/*.png generated_plots/
+
+        # Configure Git to commit changes
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
 
         # Add, commit, and push the generated plots
         git add generated_plots/*

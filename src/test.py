@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")   # Headless-safe (ensures plots work without a GUI)
+matplotlib.use("Agg")  # Headless-safe (ensures plots work without a GUI)
 import matplotlib.pyplot as plt
 import os
 

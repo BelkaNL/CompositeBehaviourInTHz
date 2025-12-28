@@ -1,4 +1,4 @@
-name: Run Python Script and Commit Plots to Repository
+name: Run Python Script and Upload Plots as Artifacts
 
 on:
   push:
@@ -30,18 +30,8 @@ jobs:
       run: |
         python src/test.py  # Ensure this path points to your script that generates plots
 
-    - name: Commit plots to repository
-      run: |
-        # Set Git user information for committing
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        
-        # Copy the plots into the existing folder (since it's manually created)
-        cp plots/*.png generated_plots/
-
-        # Add, commit, and push the plots back to the repository using GITHUB_TOKEN
-        git add generated_plots/*
-        git commit -m "Add generated plots"
-        
-        # Push changes using the GITHUB_TOKEN
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main
+    - name: Upload generated plots as artifacts
+      uses: actions/upload-artifact@v3  # Upload plots as artifacts using v3
+      with:
+        name: generated-plots  # The name of the artifact to be displayed in GitHub UI
+        path: plots/*  # Path to the generated plot files

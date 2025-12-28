@@ -1,4 +1,4 @@
-name: Run Python Script and Upload Plots as Artifacts
+name: Run Python Script and Publish Plots to GitHub Pages
 
 on:
   push:
@@ -30,8 +30,19 @@ jobs:
       run: |
         python src/test.py  # Ensure this path points to your script that generates plots
 
-    - name: Upload generated plots as artifacts
-      uses: actions/upload-artifact@v3  # Updated to the latest version (v3)
-      with:
-        name: generated-plots  # The name of the artifact to be displayed in GitHub UI
-        path: plots/*  # Path to the generated plot files
+    - name: Set up GitHub Pages
+      run: |
+        # Create the `gh-pages` branch if it doesn't exist yet
+        git checkout --orphan gh-pages
+        git rm -rf .
+        
+        # Create a folder to store plots
+        mkdir plots
+        
+        # Move generated plots into that folder
+        cp plots/*.png plots/
+
+        # Commit the plots and push them to the gh-pages branch
+        git add plots/*
+        git commit -m "Add generated plots to GitHub Pages"
+        git push origin gh-pages --force

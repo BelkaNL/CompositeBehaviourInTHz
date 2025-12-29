@@ -140,8 +140,9 @@ def inverse_fit(eps_meas, eps_m, model="MG"):
 def kk_real_from_imag(eps_imag):
     eps_real = np.zeros_like(eps_imag)
     for i in range(len(w)):
-        integrand = w * eps_imag / (w**2 - w[i]**2)
-        integrand[i] = 0
+        denom = w**2 - w[i]**2
+        denom[i] = np.inf  # avoid division by zero
+        integrand = w * eps_imag / denom
         eps_real[i] = (2/np.pi) * np.trapz(integrand, w)
     return eps_real
 

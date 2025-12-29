@@ -31,7 +31,7 @@ jobs:
 
       # 4. Run Python script to generate plots
       - name: Generate plots
-        run: python composite_em_validation.py
+        run: python src/composite_em_validation.py
 
       # 5. Upload the plots as artifacts
       - name: Upload plots

@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import trapz
 import matplotlib.pyplot as plt
 from scipy.optimize import least_squares
 import os
@@ -37,7 +38,7 @@ def orientation_average(eps_para, eps_perp):
     return (1/3)*eps_para + (2/3)*eps_perp
 
 def bruggeman(eps_m, eps_f, Vf, n_iter=200):
-    eps = eps_m * np.ones_like(eps_f)
+    eps = np.full_like(eps_f, eps_m, dtype=complex)
     for _ in range(n_iter):
         F = ((1-Vf)*(eps_m-eps)/(eps_m+2*eps)
              + Vf*(eps_f-eps)/(eps_f+2*eps))
@@ -49,29 +50,36 @@ def bruggeman(eps_m, eps_f, Vf, n_iter=200):
 # ============================================================
 
 def noisy(x, level=0.02):
+    x = np.atleast_1d(x)
     return x * (1 + level * np.random.randn(*x.shape))
 
 def synthetic_particulate():
     eps_m = 3.0 - 1j*0.02
     eps_f = 5.0 - 1j*0.01 + 0.05*np.log(f/f[0])
     Vf = 0.20
-    return noisy(maxwell_garnett(eps_m, eps_f, Vf)), eps_m, eps_f, Vf
+    eps_true = maxwell_garnett(eps_m, np.full_like(f, eps_f, dtype=complex), Vf)
+    return noisy(eps_true), eps_m, eps_f, Vf
 
 def synthetic_random_fiber():
     eps_m = 3.0 - 1j*0.02
     eps_f = 6.0 - 1j*0.015
     Vf = 0.30
-    eps = orientation_average(
-        eps_parallel(eps_m, eps_f, Vf),
-        eps_perpendicular(eps_m, eps_f, Vf)
+    eps_para = eps_parallel(eps_m, eps_f, Vf)
+    eps_perp = eps_perpendicular(eps_m, eps_f, Vf)
+    eps_true = orientation_average(
+        np.full_like(f, eps_para, dtype=complex),
+        np.full_like(f, eps_perp, dtype=complex)
     )
-    return noisy(eps), eps_m, eps_f, Vf
+    return noisy(eps_true), eps_m, eps_f, Vf
 
 def synthetic_percolating():
     eps_m = 3.0 - 1j*0.02
-    eps_f = 100 - 1j*(1e3/w)
+    eps_f = 100 - 1j*(1e3/f)
     Vf = 0.50
-    return noisy(bruggeman(eps_m, eps_f, Vf)), eps_m, eps_f, Vf
+    eps_true = bruggeman(np.full_like(f, eps_m, dtype=complex),
+                         np.full_like(f, eps_f, dtype=complex),
+                         Vf)
+    return noisy(eps_true), eps_m, eps_f, Vf
 
 # ============================================================
 # SCORING & PHYSICAL METRICS
@@ -143,14 +151,14 @@ def kk_real_from_imag(eps_imag):
         denom = w**2 - w[i]**2
         denom[i] = np.inf  # avoid division by zero
         integrand = w * eps_imag / denom
-        eps_real[i] = (2/np.pi) * np.trapz(integrand, w)
+        eps_real[i] = (2/np.pi) * trapz(integrand, w)
     return eps_real
 
 def kk_error(eps):
     return np.mean(np.abs(np.real(eps) - kk_real_from_imag(np.imag(eps))))
 
 # ============================================================
-# PLOTTING (JOURNAL STYLE)
+# PLOTTING
 # ============================================================
 
 def plot_validation(eps_true, eps_models, labels, title, fname):
@@ -168,7 +176,7 @@ def plot_validation(eps_true, eps_models, labels, title, fname):
     plt.close()
 
 # ============================================================
-# MAIN VALIDATION PIPELINE
+# MAIN PIPELINE
 # ============================================================
 
 datasets = {
@@ -180,12 +188,16 @@ datasets = {
 for name, generator in datasets.items():
     eps_true, eps_m, eps_f, Vf = generator()
 
-    eps_mg = maxwell_garnett(eps_m, eps_f, Vf)
+    eps_mg = maxwell_garnett(np.full_like(f, eps_m, dtype=complex),
+                             np.full_like(f, eps_f, dtype=complex), Vf)
     eps_fiber = orientation_average(
-        eps_parallel(eps_m, eps_f, Vf),
-        eps_perpendicular(eps_m, eps_f, Vf)
+        eps_parallel(np.full_like(f, eps_m, dtype=complex),
+                     np.full_like(f, eps_f, dtype=complex), Vf),
+        eps_perpendicular(np.full_like(f, eps_m, dtype=complex),
+                          np.full_like(f, eps_f, dtype=complex), Vf)
     )
-    eps_brug = bruggeman(eps_m, eps_f, Vf)
+    eps_brug = bruggeman(np.full_like(f, eps_m, dtype=complex),
+                         np.full_like(f, eps_f, dtype=complex), Vf)
 
     plot_validation(
         eps_true,
@@ -202,7 +214,7 @@ for name, generator in datasets.items():
     print("K–K error:", kk_error(eps_true))
 
 # ============================================================
-# INVERSE FIT DEMO (RANDOM FIBER)
+# INVERSE FIT DEMO
 # ============================================================
 
 eps_true, eps_m, eps_f_true, Vf_true = synthetic_random_fiber()

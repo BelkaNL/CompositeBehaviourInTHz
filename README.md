@@ -1,4 +1,16 @@
-composite_validation_Bayesian.py extends with the folllowing functionalities: 
+
+This script composite_validation_sweep.py
+
+Frequency-dispersive Debye & Lorentz fillers
+Effective-medium models
+CSV + plots
+Bayesian inverse fitting
+CI failure thresholds (K–K + RMSE)
+Parameter sweep matrices
+DOI-ready reproducibility metadata (Zenodo-compatible)
+YAML-driven configuration
+
+This script composite_validation_Bayesian.py extends with the folllowing functionalities: 
 
 add frequency-dispersive Debye/Lorentz fillers
 export CSV tables for reviewers

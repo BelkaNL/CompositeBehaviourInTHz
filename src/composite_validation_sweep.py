@@ -1,31 +1,52 @@
 #!/usr/bin/env python3
 """
-Composite Validation Framework
-DOI-ready | CI-enforced | Reproducible
+Composite Validation Sweep Framework
+- Frequency-dispersive Debye/Lorentz fillers
+- Parameter sweep
+- CI thresholds
+- DOI-ready reproducibility metadata
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy import trapz
 from scipy.optimize import least_squares
-import yaml, sys, os, csv, subprocess, datetime
+import yaml
+import os
+import csv
+import datetime
+import sys
+import subprocess
 
 # ============================================================
 # LOAD CONFIG
 # ============================================================
 
 if len(sys.argv) != 2:
-    raise RuntimeError("Usage: python composite_validation.py config.yml")
+    raise RuntimeError("Usage: python composite_validation_sweep.py <config.yml>")
 
-with open(sys.argv[1], "r") as f:
+config_file = sys.argv[1]
+with open(config_file, "r") as f:
     cfg = yaml.safe_load(f)
 
-np.random.seed(cfg["project"]["random_seed"])
+# ============================================================
+# CAST TO NUMERIC (PREVENT YAML STRING ISSUES)
+# ============================================================
+
+start_hz = float(cfg["frequency"]["start_hz"])
+stop_hz = float(cfg["frequency"]["stop_hz"])
+num_points = int(cfg["frequency"]["num_points"])
+
+f = np.linspace(start_hz, stop_hz, num_points)
+w = 2 * np.pi * f
+eps0 = float(cfg["constants"]["vacuum_permittivity"])
+
 SAVE_DIR = cfg["project"]["output_directory"]
 os.makedirs(SAVE_DIR, exist_ok=True)
+np.random.seed(int(cfg["project"]["random_seed"]))
 
 # ============================================================
-# METADATA (DOI-READY)
+# DOI-ready metadata
 # ============================================================
 
 def write_metadata(cfg):
@@ -42,32 +63,18 @@ def write_metadata(cfg):
 write_metadata(cfg)
 
 # ============================================================
-# FREQUENCY GRID
-# ============================================================
-
-f = np.linspace(
-    cfg["frequency"]["start_hz"],
-    cfg["frequency"]["stop_hz"],
-    cfg["frequency"]["num_points"]
-)
-w = 2 * np.pi * f
-eps0 = 8.854e-12
-
-# ============================================================
 # EFFECTIVE MEDIUM MODELS
 # ============================================================
 
 def maxwell_garnett(eps_m, eps_f, Vf):
-    return eps_m * (
-        (eps_f + 2*eps_m + 2*Vf*(eps_f - eps_m)) /
-        (eps_f + 2*eps_m - Vf*(eps_f - eps_m))
-    )
+    return eps_m * ((eps_f + 2*eps_m + 2*Vf*(eps_f - eps_m)) /
+                    (eps_f + 2*eps_m - Vf*(eps_f - eps_m)))
 
 def bruggeman(eps_m, eps_f, Vf, n_iter=200):
     eps = np.full_like(eps_f, eps_m, dtype=complex)
     for _ in range(n_iter):
-        F = ((1-Vf)*(eps_m-eps)/(eps_m+2*eps)
-             + Vf*(eps_f-eps)/(eps_f+2*eps))
+        F = ((1-Vf)*(eps_m-eps)/(eps_m+2*eps) +
+             Vf*(eps_f-eps)/(eps_f+2*eps))
         eps -= 0.5 * F
     return eps
 
@@ -104,7 +111,7 @@ def kk_error(eps):
     return np.mean(np.abs(np.real(eps) - kk_real_from_imag(np.imag(eps))))
 
 # ============================================================
-# CSV EXPORT
+# EXPORT CSV
 # ============================================================
 
 def export_csv(fname, eps):
@@ -144,13 +151,14 @@ for Vf in cfg["parameter_sweeps"]["volume_fraction"]:
 
         eps_m = 2.8 - 1j*0.01
         eps_f = debye_eps(
-            cfg["fillers"]["debye"]["eps_inf"],
-            cfg["fillers"]["debye"]["delta_eps"],
+            float(cfg["fillers"]["debye"]["eps_inf"]),
+            float(cfg["fillers"]["debye"]["delta_eps"]),
             tau
         )
 
         eps_eff = maxwell_garnett(eps_m, eps_f, Vf)
 
+        # Metrics
         kk = kk_error(eps_eff)
         r = rmse(eps_eff, eps_m)
 
@@ -162,15 +170,11 @@ for Vf in cfg["parameter_sweeps"]["volume_fraction"]:
         })
 
         # CI FAILURE CONDITIONS
-        if kk > cfg["ci_thresholds"]["max_kk_error"]:
-            raise RuntimeError(
-                f"CI FAIL: K–K error {kk:.3f} exceeds threshold"
-            )
+        if kk > float(cfg["ci_thresholds"]["max_kk_error"]):
+            raise RuntimeError(f"CI FAIL: K–K error {kk:.3f} exceeds threshold")
 
-        if r > cfg["ci_thresholds"]["max_rmse_eps"]:
-            raise RuntimeError(
-                f"CI FAIL: RMSE {r:.3f} exceeds threshold"
-            )
+        if r > float(cfg["ci_thresholds"]["max_rmse_eps"]):
+            raise RuntimeError(f"CI FAIL: RMSE {r:.3f} exceeds threshold")
 
         tag = f"Vf{Vf}_tau{tau:.1e}"
         export_csv(f"{tag}.csv", eps_eff)

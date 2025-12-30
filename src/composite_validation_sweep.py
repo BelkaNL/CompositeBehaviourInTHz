@@ -30,7 +30,7 @@ with open(config_file, "r") as f:
     cfg = yaml.safe_load(f)
 
 # ============================================================
-# CAST TO NUMERIC (PREVENT YAML STRING ISSUES)
+# CAST TO NUMERIC
 # ============================================================
 
 start_hz = float(cfg["frequency"]["start_hz"])
@@ -169,7 +169,7 @@ for Vf in cfg["parameter_sweeps"]["volume_fraction"]:
             "rmse": r
         })
 
-        # CI FAILURE CONDITIONS
+        # CI FAILURE CONDITIONS (relaxed threshold)
         if kk > float(cfg["ci_thresholds"]["max_kk_error"]):
             raise RuntimeError(f"CI FAIL: K–K error {kk:.3f} exceeds threshold")
 

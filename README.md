@@ -1,3 +1,9 @@
+composite_validation_Bayesian.py extends with the folllowing functionalities: 
+
+add frequency-dispersive Debye/Lorentz fillers
+export CSV tables for reviewers
+include Bayesian inverse fitting
+
 This script composite_em_properties_ghz_thz.py generates:
 
 ε′(f) and ε″(f) vs frequency

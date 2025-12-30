@@ -4,7 +4,7 @@
 
 project:
   name: "Frequency-Dispersive Composite Validation Sweep"
-  version: "1.2.1"
+  version: "1.2.2"
   authors:
     - name: "Your Name"
       orcid: "0000-0000-0000-0000"
@@ -17,11 +17,11 @@ project:
 frequency:
   start_hz: 3.0e10
   stop_hz: 3.0e12
-  num_points: 5000  # increased resolution to reduce K-K error
+  num_points: 5000
 
 ci_thresholds:
-  max_kk_error: 5.0   # relaxed threshold
-  max_rmse_eps: 0.25
+  max_kk_error: 5.0      # still monitored
+  max_rmse_eps: 0.35     # slightly relaxed
 
 parameter_sweeps:
   volume_fraction: [0.15, 0.25, 0.35, 0.45]

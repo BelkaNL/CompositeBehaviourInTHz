@@ -39,7 +39,7 @@ jobs:
       # 5. Run validation using YAML config
       - name: Generate datasets and plots
         run: |
-          python src/composite_validation.py config/composite_validation.yml
+          python src/composite_validation_Bayesian.py config/composite_validation_Bayes.yml
 
       # 6. Upload plots
       - name: Upload plots

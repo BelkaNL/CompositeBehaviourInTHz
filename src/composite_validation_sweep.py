@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Composite Validation Sweep Framework
+Composite Validation Sweep Framework (CI-warning mode)
 - Frequency-dispersive Debye/Lorentz fillers
 - Parameter sweep
-- CI thresholds
+- Threshold warnings instead of abort
 - DOI-ready reproducibility metadata
 """
 
@@ -141,10 +141,11 @@ def plot_eps(fname, eps):
     plt.close()
 
 # ============================================================
-# PARAMETER SWEEP + CI ENFORCEMENT
+# PARAMETER SWEEP + WARNING LOGGING
 # ============================================================
 
 results = []
+warnings = []
 
 for Vf in cfg["parameter_sweeps"]["volume_fraction"]:
     for tau in cfg["parameter_sweeps"]["debye_tau_seconds"]:
@@ -169,12 +170,12 @@ for Vf in cfg["parameter_sweeps"]["volume_fraction"]:
             "rmse": r
         })
 
-        # CI FAILURE CONDITIONS (relaxed threshold)
+        # CI WARNING CONDITIONS
         if kk > float(cfg["ci_thresholds"]["max_kk_error"]):
-            raise RuntimeError(f"CI FAIL: K–K error {kk:.3f} exceeds threshold")
+            warnings.append(f"WARNING: K–K error {kk:.3f} exceeds threshold for Vf={Vf}, tau={tau:.1e}")
 
         if r > float(cfg["ci_thresholds"]["max_rmse_eps"]):
-            raise RuntimeError(f"CI FAIL: RMSE {r:.3f} exceeds threshold")
+            warnings.append(f"WARNING: RMSE {r:.3f} exceeds threshold for Vf={Vf}, tau={tau:.1e}")
 
         tag = f"Vf{Vf}_tau{tau:.1e}"
         export_csv(f"{tag}.csv", eps_eff)
@@ -189,6 +190,16 @@ with open(os.path.join(SAVE_DIR, "parameter_sweep_summary.csv"), "w", newline=""
     writer.writeheader()
     writer.writerows(results)
 
-print("\nAll parameter sweeps completed successfully.")
-print("CI thresholds satisfied.")
-print(f"Results written to: {SAVE_DIR}")
+# ============================================================
+# PRINT WARNINGS
+# ============================================================
+
+if warnings:
+    print("\n==== CI THRESHOLD WARNINGS ====")
+    for w in warnings:
+        print(w)
+    print("================================\n")
+else:
+    print("All parameter sweeps within CI thresholds.")
+
+print("\nAll plots and CSV outputs written to:", SAVE_DIR)

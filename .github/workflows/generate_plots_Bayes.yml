@@ -1,50 +1,150 @@
-name: Generate Datasets and Plots
+# ============================================================
+# COMPOSITE VALIDATION CONFIGURATION
+# ============================================================
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+project:
+  name: "Frequency-Dispersive Composite Validation"
+  output_directory: "journal_validation_outputs"
+  random_seed: 0
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# ============================================================
+# FREQUENCY GRID
+# ============================================================
 
-    steps:
-      # 1. Checkout repo
-      - name: Checkout repository
-        uses: actions/checkout@v3
+frequency:
+  start_hz: 3.0e10        # 30 GHz
+  stop_hz: 3.0e12         # 3 THz
+  num_points: 1200
 
-      # 2. Set up Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
+# ============================================================
+# EFFECTIVE MEDIUM MODELS
+# ============================================================
 
-      # 3. Install dependencies (force clean numpy)
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip uninstall -y numpy
-          pip install numpy==1.26.0 scipy matplotlib
+effective_medium_models:
+  - maxwell_garnett
+  - bruggeman
+  - orientation_average
 
-      # 4. Check for local numpy shadowing
-      - name: Check for local numpy conflicts
-        run: |
-          if find . -name "numpy*" | grep -q numpy; then
-              echo "Error: Found local file/folder named numpy. Rename it!" >&2
-              exit 1
-          fi
+# ============================================================
+# DISPERSIVE FILLER MODELS
+# ============================================================
 
-      # 5. Run Python script to generate plots
-      - name: Generate plots
-        run: python src/composite_validation_Bayesian.py
-        
-      # 6. Upload the plots as artifacts
-      - name: Upload plots
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated_plots
-          path: journal_validation_plots/*.png
+fillers:
+
+  debye_particulate:
+    matrix:
+      eps_real: 2.8
+      eps_imag: 0.01
+
+    filler:
+      model: debye
+      eps_inf: 4.0
+      delta_eps: 3.0
+      tau_seconds: 3.0e-13
+      conductivity: 0.0
+
+    volume_fraction: 0.25
+    noise_level: 0.02
+
+  lorentz_percolating:
+    matrix:
+      eps_real: 3.2
+      eps_imag: 0.02
+
+    filler:
+      model: lorentz
+      eps_inf: 2.5
+      resonance_frequency_hz: 9.0e11
+      damping_gamma: 1.2e11
+      oscillator_strength: 6.0
+
+    volume_fraction: 0.45
+    noise_level: 0.02
+
+# ============================================================
+# VALIDATION METRICS
+# ============================================================
+
+metrics:
+  rmse:
+    enabled: true
+    components:
+      - complex
+      - real
+      - imaginary
+
+  loss_tangent:
+    enabled: true
+
+  reflectivity:
+    enabled: true
+
+  kramers_kronig:
+    enabled: true
+    integration_method: "trapezoidal"
+
+# ============================================================
+# CSV EXPORT SETTINGS
+# ============================================================
+
+csv_export:
+  enabled: true
+  include_columns:
+    - frequency_hz
+    - eps_real
+    - eps_imag
+    - loss_tangent
+  filename_template: "{dataset_name}.csv"
+
+# ============================================================
+# PLOTTING
+# ============================================================
+
+plots:
+  enabled: true
+  dpi: 300
+  frequency_unit: "GHz"
+  plot_real_permittivity: true
+  plot_imag_permittivity: false
+  filename_template: "{dataset_name}.png"
+
+# ============================================================
+# BAYESIAN INVERSE FITTING
+# ============================================================
+
+bayesian_inverse_fitting:
+  enabled: true
+  model: maxwell_garnett
+
+  mcmc:
+    steps: 6000
+    burn_in_fraction: 0.3
+
+    proposal_scales:
+      volume_fraction: 0.02
+      filler_eps_real: 0.30
+      filler_eps_imag: 0.02
+
+  priors:
+    volume_fraction:
+      min: 0.01
+      max: 0.60
+
+    filler_eps_real:
+      min: 1.0
+      max: 50.0
+
+    filler_eps_imag:
+      min: 0.0
+      max: 1.0
+
+  likelihood:
+    noise_sigma: 0.05
+
+# ============================================================
+# NUMERICAL CONSTANTS
+# ============================================================
+
+constants:
+  vacuum_permittivity: 8.854e-12
+  pi: 3.141592653589793

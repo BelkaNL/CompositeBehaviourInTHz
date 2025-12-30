@@ -1,0 +1,79 @@
+name: Run Composite Validation (CI + DOI Ready)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:   # allows manual trigger from GitHub UI
+
+jobs:
+  composite-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ----------------------------------------------------
+      # 1. Checkout repository
+      # ----------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # ----------------------------------------------------
+      # 2. Set up Python
+      # ----------------------------------------------------
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      # ----------------------------------------------------
+      # 3. Install dependencies (reproducible)
+      # ----------------------------------------------------
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip uninstall -y numpy || true
+          pip install \
+            numpy==1.26.0 \
+            scipy \
+            matplotlib \
+            pyyaml
+
+      # ----------------------------------------------------
+      # 4. Sanity check: avoid NumPy shadowing
+      # ----------------------------------------------------
+      - name: Check for NumPy shadowing
+        run: |
+          if find . -maxdepth 2 -name "numpy*" | grep -q numpy; then
+            echo "ERROR: Local file or directory named 'numpy' detected." >&2
+            exit 1
+          fi
+
+      # ----------------------------------------------------
+      # 5. Run composite validation (CI-enforced)
+      # ----------------------------------------------------
+      - name: Run composite validation
+        run: |
+          python src/composite_validation.py config/composite_validation.yml
+
+      # ----------------------------------------------------
+      # 6. Upload all validation outputs
+      # ----------------------------------------------------
+      - name: Upload validation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: composite_validation_outputs
+          path: |
+            journal_validation_outputs/*.png
+            journal_validation_outputs/*.csv
+            journal_validation_outputs/metadata.yml
+
+      # ----------------------------------------------------
+      # 7. Summary (visible in GitHub UI)
+      # ----------------------------------------------------
+      - name: CI summary
+        run: |
+          echo "Composite validation completed successfully."
+          echo "CI thresholds satisfied."
+          echo "Artifacts uploaded for review."

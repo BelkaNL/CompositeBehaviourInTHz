@@ -40,8 +40,8 @@ jobs:
 
       # 5. Run Python script to generate plots
       - name: Generate plots
-        run: python src/composite_em_validation_Bayes.py
-
+        run: python src/composite_validation_Bayesian.py
+        
       # 6. Upload the plots as artifacts
       - name: Upload plots
         uses: actions/upload-artifact@v4
